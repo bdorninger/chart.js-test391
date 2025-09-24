@@ -9,7 +9,11 @@ import {
   ChartEvent,
   Point,
   ChartConfiguration,
+  Tick,
   LineOptions,
+  ChartData,
+  ChartDataset,
+  Scriptable,
 } from 'chart.js/auto';
 
 // import dragData from 'chartjs-plugin-dragdata';
@@ -50,6 +54,9 @@ tempRange.addEventListener('change', onTempValueChange);
 const selPos = document.getElementById('posSel');
 selPos.addEventListener('change', onSelectionPositionChange);
 
+const stepB = document.getElementById('stepb') as HTMLButtonElement;
+stepB.addEventListener('click', onChangeStep);
+
 // const crosshair = new TracePlugin();
 //console.log(`crosshair: ${JSON.stringify(crosshair)}`, crosshair.id);
 // console.log(`dragdate: ${JSON.stringify(ChartJSdragDataPlugin)}`);
@@ -86,14 +93,14 @@ const config: ChartConfiguration = {
         hidden: false,
         fill: false,
         segment: {
-          borderWidth: (ctx, opt) => (ctx.p0.y === ctx.p1.y ? 10 : undefined),
-          borderColor: (ctx, opt) =>
-            ctx.p0.y === ctx.p1.y
-              ? colorLib('#ffaa00').alpha(0.2).rgbString()
-              : undefined,
-          backgroundColor: (ctx, opt) => {
-            //console.log('line', l.start);
-            return ctx.p0.y === ctx.p1.y ? '#ffffff' : undefined;
+          borderWidth: (ctx, opt) => (ctx.p0.y === ctx.p1.y ? 5 : undefined),
+          borderColor: (ctx, opt) => {
+            const d = ctx.p0.y - ctx.p1.y;
+            return d === 0
+              ? colorLib('#ffaa00').alpha(0.8).rgbString()
+              : d < 0
+              ? '#00ff00'
+              : undefined;
           },
           borderCapStyle: () => undefined,
           borderDash: () => undefined,
@@ -110,7 +117,7 @@ const config: ChartConfiguration = {
         borderWidth: 10,
         borderColor: colorLib('#ffaa00').alpha(0.4).rgbString(),
         backgroundColor: '#00ffee',
-        hidden: false,
+        hidden: true,
         fill: false,
       },
       {
@@ -137,11 +144,11 @@ const config: ChartConfiguration = {
       {
         label: '  Pressure hi',
         data: [
-          { x: 0, y: 6 },
-          { x: 2, y: 5.5 },
-          { x: 3.5, y: 5.7 },
-          { x: 4, y: 5.7 },
-          { x: 10, y: 8 },
+          { x: 0, y: 8 },
+          { x: 2, y: 7.5 },
+          { x: 3.5, y: 7.7 },
+          { x: 4, y: 8.7 },
+          { x: 10, y: 9 },
           /*{ x: 6, y: 12 },
           { x: 7, y: 11.5 },*/
         ],
@@ -158,7 +165,12 @@ const config: ChartConfiguration = {
         pointStyle: 'rect', // "circle" | "cross" | "crossRot" | "dash" | "line" | "rect" | "rectRounded" | "rectRot" | "star" | "triangle" | HTMLImageElement | HTMLCanvasElemen
         radius: 6,
         rotation: 45,
-        stepped: false, // true/false, 'before', ' middle' 'after'
+        stepped: (a, b) => {
+          console.log(`scriptable stepped: `, a, b);
+          b.stepped = false;
+          return b.stepped;
+          // return b.stepped ? false : 'middle'; // true/false, 'before', ' middle' 'after'
+        },
       },
       {
         label: '  Pressure act',
@@ -183,8 +195,7 @@ const config: ChartConfiguration = {
         pointStyle: 'rect', // "circle" | "cross" | "crossRot" | "dash" | "line" | "rect" | "rectRounded" | "rectRot" | "star" | "triangle" | HTMLImageElement | HTMLCanvasElemen
         radius: 6,
         rotation: 45,
-        stepped: 'middle', // true/false, 'before', ' middle' 'after'
-        tooltip: false
+        stepped: 'before', // true/false, 'before', ' middle' 'after'
       },
       {
         label: '  Pressure lo',
@@ -250,8 +261,15 @@ const config: ChartConfiguration = {
           text: 'Foo',
         },
         ticks: {
-          callback: function (val: number, index) {
+          callback: function (val: number, index: number, ticks: Tick[]) {
             // Hide every 2nd tick label
+            if (index === 0) {
+              return `${String(val)} \u2771\u2771`;
+              // return `${String(val)} >>`;
+            }
+            if (index === ticks.length - 1) {
+              return `\u2770\u2770 ${String(val)}`;
+            }
             return val % 2 === 0 ? String(val) : '';
           },
           color: 'green',
@@ -352,6 +370,9 @@ const config: ChartConfiguration = {
           },
         },
       },
+      tooltip: {
+        enabled: false,
+      },
 
       /*tooltip: {
         mode: 'point',
@@ -407,7 +428,7 @@ const config: ChartConfiguration = {
       //
       dragData: {
         round: 1,
-        showTooltip: true,
+        showTooltip: false,
         dragX: true,
         dragY: true,
         magnet: {
@@ -421,7 +442,7 @@ const config: ChartConfiguration = {
         },
         onDrag: function (e, datasetIndex, index, value: number | Point) {
           e.target.style.cursor = 'grabbing';
-          console.log('Dragging', e, datasetIndex, index, value);
+          // console.log('Dragging', e, datasetIndex, index, value);
           if (typeof value === 'number') {
             return value >= 2 && value <= 19;
           }
@@ -432,7 +453,7 @@ const config: ChartConfiguration = {
           if (value.y > 19) {
             ret.y = 19;
           }
-          console.log('returning: ', ret);
+          // console.log('returning: ', ret);
           return ret;
 
           // return value.y >= 2 && value.y <= 19;
@@ -463,4 +484,21 @@ export function onSelectionPositionChange(ev: any) {
   selectionBarData[0].x = val;
   selectionBarData[1].x = val;
   setTimeout(() => chart.update('none'), 100);
+}
+
+const allSteps = ['before', 'after', 'middle', false];
+
+export function onChangeStep(ev: MouseEvent) {
+  const ds = chart.data.datasets[4] as ChartDataset<'line'>;
+  const currentStep = ds.stepped;
+  const ind = allSteps.indexOf(currentStep as any);
+  if (ind < 0) {
+    console.warn(currentStep);
+    return;
+  }
+  const nextind = (ind + 1) % allSteps.length;
+  const newStep = allSteps[nextind];
+  ds.stepped = newStep as any;
+  stepB.textContent = `Step: ${newStep}`;
+  chart.update();
 }
