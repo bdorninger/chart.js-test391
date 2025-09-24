@@ -31,7 +31,7 @@ const config: ChartConfiguration = {
         borderWidth: 2,
         borderColor: 'rgba(255,0,0,0.1)',
         backgroundColor: 'rgba(255,0,0,0)',
-      },
+      },*/
       {
         label: '  Pressure',
         data: [12, 19, 3, 5, 2, 3],
@@ -47,7 +47,7 @@ const config: ChartConfiguration = {
         radius: 6,
         rotation: 45,
         stepped: 'middle', // true/false, 'before', ' middle' 'after'
-      },
+      } /*
       {
         label: '  Velocity',
         data: [7, 11, 5, 8, 3, 7],
@@ -58,7 +58,7 @@ const config: ChartConfiguration = {
         borderColor: '#4dc900',
         backgroundColor: '#ffffff',
         pointHitRadius: 5,
-      },*/
+      },*/,
     ],
   },
   options: {

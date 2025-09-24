@@ -137,11 +137,11 @@ const config: ChartConfiguration = {
       {
         label: '  Pressure hi',
         data: [
-          { x: 1, y: 6 },
+          { x: 0, y: 6 },
           { x: 2, y: 5.5 },
-          { x: 3.5, y: 4.7 },
-          { x: 4, y: 3.7 },
-          { x: 5, y: 8 },
+          { x: 3.5, y: 5.7 },
+          { x: 4, y: 5.7 },
+          { x: 10, y: 8 },
           /*{ x: 6, y: 12 },
           { x: 7, y: 11.5 },*/
         ],
@@ -158,18 +158,18 @@ const config: ChartConfiguration = {
         pointStyle: 'rect', // "circle" | "cross" | "crossRot" | "dash" | "line" | "rect" | "rectRounded" | "rectRot" | "star" | "triangle" | HTMLImageElement | HTMLCanvasElemen
         radius: 6,
         rotation: 45,
-        // stepped: 'middle', // true/false, 'before', ' middle' 'after'
+        stepped: false, // true/false, 'before', ' middle' 'after'
       },
       {
         label: '  Pressure act',
         data: [
-          { x: 1, y: 4 },
+          { x: 0, y: 4 },
           { x: 2, y: 5 },
           { x: 3.5, y: 4 },
           { x: 4, y: 3 },
           { x: 5, y: 7 },
           { x: 6, y: 11 },
-          { x: 7, y: 10 },
+          { x: 10, y: 10 },
         ],
 
         fill: false,
@@ -183,18 +183,19 @@ const config: ChartConfiguration = {
         pointStyle: 'rect', // "circle" | "cross" | "crossRot" | "dash" | "line" | "rect" | "rectRounded" | "rectRot" | "star" | "triangle" | HTMLImageElement | HTMLCanvasElemen
         radius: 6,
         rotation: 45,
-        // stepped: 'middle', // true/false, 'before', ' middle' 'after'
+        stepped: 'middle', // true/false, 'before', ' middle' 'after'
+        tooltip: false
       },
       {
         label: '  Pressure lo',
         data: [
-          { x: 1, y: 2 },
+          { x: 0, y: 2 },
           { x: 2, y: 3.5 },
           { x: 3.5, y: 2 },
           { x: 4, y: 1.9 },
-          { x: 5, y: 6 },
-          { x: 6, y: 8 },
-          { x: 7, y: 7.5 },
+          { x: 5, y: 3 },
+          { x: 6, y: 3 },
+          { x: 10, y: 2.5 },
         ],
 
         fill: '-1',
