@@ -78,7 +78,7 @@ const config: ChartConfiguration = {
     // labels: ['P1', 'P2', 'P3', 'P4', 'P5', 'P6'],
     datasets: [
       {
-        label: '  Temperature',
+        label: 'Temperature',
         data: [
           { x: 1, y: 10 },
           { x: 2, y: 13 },
@@ -109,7 +109,7 @@ const config: ChartConfiguration = {
         },
       },
       {
-        label: '  Temperature HiLite',
+        label: '', //Temperature HiLite',
         data: [
           { x: 2, y: 13 },
           { x: 3, y: 13.2 },
@@ -142,7 +142,7 @@ const config: ChartConfiguration = {
         backgroundColor: 'rgba(255,0,0,0)',
       },*/
       {
-        label: '  Pressure hi',
+        label: 'Pressure hi',
         data: [
           { x: 0, y: 8 },
           { x: 2, y: 7.5 },
@@ -156,7 +156,7 @@ const config: ChartConfiguration = {
         fill: '+1',
         tension: 0.0,
         borderWidth: 3,
-
+        borderDash: [4, 5],
         borderColor: colorLib('#0d0cff').alpha(0.4).rgbString(),
         backgroundColor: colorLib('#035000').alpha(0.4).rgbString(),
         pointHitRadius: 25,
@@ -165,15 +165,16 @@ const config: ChartConfiguration = {
         pointStyle: 'rect', // "circle" | "cross" | "crossRot" | "dash" | "line" | "rect" | "rectRounded" | "rectRot" | "star" | "triangle" | HTMLImageElement | HTMLCanvasElemen
         radius: 6,
         rotation: 45,
-        stepped: (a, b) => {
+        stepped: false,
+        /*stepped: (a, b) => {
           console.log(`scriptable stepped: `, a, b);
           b.stepped = false;
           return b.stepped;
           // return b.stepped ? false : 'middle'; // true/false, 'before', ' middle' 'after'
-        },
+        },*/
       },
       {
-        label: '  Pressure act',
+        label: 'Pressure act',
         data: [
           { x: 0, y: 4 },
           { x: 2, y: 5 },
@@ -198,7 +199,7 @@ const config: ChartConfiguration = {
         stepped: 'before', // true/false, 'before', ' middle' 'after'
       },
       {
-        label: '  Pressure lo',
+        label: 'Pressure lo',
         data: [
           { x: 0, y: 2 },
           { x: 2, y: 3.5 },
@@ -212,7 +213,7 @@ const config: ChartConfiguration = {
         fill: '-1',
         tension: 0.0,
         borderWidth: 3,
-
+        borderDash: [4, 5],
         borderColor: colorLib('#ff0c00').alpha(0.4).rgbString(),
         backgroundColor: colorLib('#f35a0f').alpha(0.4).rgbString(),
         pointHitRadius: 25,
@@ -262,13 +263,15 @@ const config: ChartConfiguration = {
         },
         ticks: {
           callback: function (val: number, index: number, ticks: Tick[]) {
+            // \u2771\u2771
+            //  0x276e +f
             // Hide every 2nd tick label
             if (index === 0) {
-              return `${String(val)} \u2771\u2771`;
+              return `${String(val)} \u276e\u276e`;
               // return `${String(val)} >>`;
             }
             if (index === ticks.length - 1) {
-              return `\u2770\u2770 ${String(val)}`;
+              return `\u276f\u276f ${String(val)}`;
             }
             return val % 2 === 0 ? String(val) : '';
           },
@@ -363,11 +366,22 @@ const config: ChartConfiguration = {
         },
       },
       legend: {
+        position: 'bottom',
         labels: {
-          filter: function (item, chart) {
-            // Logic to remove a particular legend item goes here
-            return item.text !== undefined;
+          font: {
+            family: "'Inter', sans-serif",
+            size: 16,
+            //style: 'italic',
           },
+          filter: function (item, chart) {
+            if (item?.text?.startsWith('Pressure')) {
+              item.text = `${item.text} [bar]`;
+              item.lineDash = [2, 4];
+            }
+            // Logic to remove a particular legend item goes here
+            return item.text != null && item.text !== '';
+          },
+          boxHeight: 0,
         },
       },
       tooltip: {
