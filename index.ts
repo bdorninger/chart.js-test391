@@ -12,7 +12,7 @@ import {
   ChartDataset,
 } from 'chart.js/auto';
 
-import { toRamp } from './ramp';
+import { rampedToChartStepped, toRamp } from './ramp';
 
 import { ChartJSdragDataPlugin } from './drag';
 
@@ -206,7 +206,7 @@ const config: ChartConfiguration = {
         borderJoinStyle: 'bevel', // round, miter
         pointStyle: 'star', // "circle" | "cross" | "crossRot" | "dash" | "line" | "rect" | "rectRounded" | "rectRot" | "star" | "triangle" | HTMLImageElement | HTMLCanvasElemen
         radius: 6,
-        //stepped: 'before',
+        stepped: 'before',
       },
     ],
   },
@@ -411,12 +411,12 @@ const config: ChartConfiguration = {
             return value >= 2 && value <= 19;
           }
           const ret = { ...value };
-          if (value?.y ?? 0 < 2) {
+          /*if (value?.y ?? 0 < 2) {
             ret.y = 2;
           }
           if (value?.y ?? 30 > 29) {
             ret.y = 29;
-          }
+          }*/
           // console.log('returning: ', ret);
           return ret;
 
@@ -470,7 +470,6 @@ export function onChangeStep(ev: MouseEvent) {
 }
 
 export function onRampB(ev: MouseEvent) {
-  console.log(`ramp!`);
   const pt = chart.data.datasets[4] as ChartDataset<'line'>;
   const ds = chart.data.datasets[6] as ChartDataset<'line'>;
   const ko = chart.data.datasets[7] as ChartDataset<'line'>;
@@ -479,9 +478,7 @@ export function onRampB(ev: MouseEvent) {
     const rmp = toRamp(pt.data as any);
     ds.data = rmp.map((p) => ({ x: p.x, y: p.y + 10 }));
     if (ko != null) {
-      ko.data = structuredClone(rmp)
-        .filter((p, i, a) => i % 2 === 1 || i === 0 || i === a.length - 1)
-        .map((p) => ({ x: p.x, y: p.y + 20 }));
+      ko.data = rampedToChartStepped(rmp);
     }
     chart.update();
   } else {
