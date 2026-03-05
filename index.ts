@@ -9,34 +9,11 @@ import {
   ChartEvent,
   Point,
   ChartConfiguration,
-  Tick,
-  LineOptions,
-  ChartData,
   ChartDataset,
-  Scriptable,
 } from 'chart.js/auto';
 
-// import dragData from 'chartjs-plugin-dragdata';
-// import zoomPlugin from 'chartjs-plugin-zoom';
+import { toRamp } from './ramp';
 
-// import { TracePlugin } from './trace';
-
-// CROSSHAIR no import method yields a stable, usable plugin object....
-// imports undefined
-// import CrosshairPlugin from 'chartjs-plugin-crosshair';
-
-// import CrosshairPlugin from 'chartjs-plugin-crosshair'; // this one imports undefined
-// import Interpolate from 'chartjs-plugin-crosshair';
-
-/* this one imports an object with one entry "default": {} resulting in an   
-   error on initializing the chart plugins when resgistered as imported
-   if registered via CrosshairPlugin.default, the chart is being drawn,
-   but the crosshair/zoom does still not work
-   Debugging shows, the register method did not fail, but didn't insert anything into the plugin registry either
-*/
-// import { CrosshairPlugin, Interpolate } from 'chartjs-plugin-crosshair';
-//import * as CrosshairPlugin from 'chartjs-plugin-crosshair';
-import { LineElement, LineProps, Segment, TooltipItem } from 'chart.js';
 import { ChartJSdragDataPlugin } from './drag';
 
 // DRAG SEGMENT: API incompatible!
@@ -49,23 +26,19 @@ const ctx = (
 ).getContext('2d');
 
 const tempRange = document.getElementById('tempRange');
-tempRange.addEventListener('change', onTempValueChange);
+tempRange?.addEventListener('change', onTempValueChange);
 
 const selPos = document.getElementById('posSel');
-selPos.addEventListener('change', onSelectionPositionChange);
+selPos?.addEventListener('change', onSelectionPositionChange);
 
 const stepB = document.getElementById('stepb') as HTMLButtonElement;
 stepB.addEventListener('click', onChangeStep);
 
-// const crosshair = new TracePlugin();
-//console.log(`crosshair: ${JSON.stringify(crosshair)}`, crosshair.id);
-// console.log(`dragdate: ${JSON.stringify(ChartJSdragDataPlugin)}`);
-// const plugins = [CH.CrosshairPlugin];
+const rampB = document.getElementById('rampb') as HTMLButtonElement;
+rampB.addEventListener('click', onRampB);
+
 const dragData = ChartJSdragDataPlugin;
 Chart.register(dragData /*crosshair*/);
-//Interaction.modes.interpolate = Interpolate;
-
-// const reg = Chart.registry.plugins;
 
 const selectionBarData = [
   { x: 2.5, y: -0.5 },
@@ -75,7 +48,6 @@ const selectionBarData = [
 const config: ChartConfiguration = {
   type: 'line',
   data: {
-    // labels: ['P1', 'P2', 'P3', 'P4', 'P5', 'P6'],
     datasets: [
       {
         label: 'Temperature',
@@ -90,7 +62,7 @@ const config: ChartConfiguration = {
         borderWidth: 2,
         borderColor: '#ff0016',
         backgroundColor: '#00ffee',
-        hidden: false,
+        hidden: true,
         fill: false,
         segment: {
           borderWidth: (ctx, opt) => (ctx.p0.y === ctx.p1.y ? 5 : undefined),
@@ -109,7 +81,7 @@ const config: ChartConfiguration = {
         },
       },
       {
-        label: '', //Temperature HiLite',
+        label: 'hi', //Temperature HiLite',
         data: [
           { x: 2, y: 13 },
           { x: 3, y: 13.2 },
@@ -121,7 +93,7 @@ const config: ChartConfiguration = {
         fill: false,
       },
       {
-        label: undefined,
+        label: 'sb',
         hidden: true,
         data: selectionBarData,
         borderWidth: 35,
@@ -129,18 +101,6 @@ const config: ChartConfiguration = {
         radius: 0,
         fill: false,
       },
-      /*{
-        data: [11, 12.5, 12.8, 14, 4.4, 8.5],
-        borderWidth: 1,
-        borderColor: 'rgba(255,0,0,0.4)',
-        backgroundColor: 'rgba(255,0,0,0)',
-      },*/
-      /*{
-        data: [10.5, 12.3, 12.6, 13.8, 3, 7.9],
-        borderWidth: 2,
-        borderColor: 'rgba(255,0,0,0.1)',
-        backgroundColor: 'rgba(255,0,0,0)',
-      },*/
       {
         label: 'Pressure hi',
         data: [
@@ -149,8 +109,6 @@ const config: ChartConfiguration = {
           { x: 3.5, y: 7.7 },
           { x: 4, y: 8.7 },
           { x: 10, y: 9 },
-          /*{ x: 6, y: 12 },
-          { x: 7, y: 11.5 },*/
         ],
 
         fill: '+1',
@@ -166,23 +124,18 @@ const config: ChartConfiguration = {
         radius: 6,
         rotation: 45,
         stepped: false,
-        /*stepped: (a, b) => {
-          console.log(`scriptable stepped: `, a, b);
-          b.stepped = false;
-          return b.stepped;
-          // return b.stepped ? false : 'middle'; // true/false, 'before', ' middle' 'after'
-        },*/
       },
       {
-        label: 'Pressure act',
+        label: 'Pressure ed',
         data: [
           { x: 0, y: 4 },
           { x: 2, y: 5 },
           { x: 3.5, y: 4 },
           { x: 4, y: 3 },
           { x: 5, y: 7 },
-          { x: 6, y: 11 },
-          { x: 10, y: 10 },
+          { x: 6, y: 9 },
+          { x: 8, y: 9 },
+          { x: 10, y: 6 },
         ],
 
         fill: false,
@@ -196,7 +149,7 @@ const config: ChartConfiguration = {
         pointStyle: 'rect', // "circle" | "cross" | "crossRot" | "dash" | "line" | "rect" | "rectRounded" | "rectRot" | "star" | "triangle" | HTMLImageElement | HTMLCanvasElemen
         radius: 6,
         rotation: 45,
-        stepped: 'before', // true/false, 'before', ' middle' 'after'
+        stepped: false, // true/false, 'before', ' middle' 'after'
       },
       {
         label: 'Pressure lo',
@@ -219,23 +172,42 @@ const config: ChartConfiguration = {
         pointHitRadius: 25,
         borderCapStyle: 'square',
         borderJoinStyle: 'bevel', // round, miter
-        pointStyle: 'rect', // "circle" | "cross" | "crossRot" | "dash" | "line" | "rect" | "rectRounded" | "rectRot" | "star" | "triangle" | HTMLImageElement | HTMLCanvasElemen
+        pointStyle: 'rect',
         radius: 6,
         rotation: 45,
-        // stepped: 'middle', // true/false, 'before', ' middle' 'after'
       },
 
-      /*{
-        label: '  Velocity',
-        data: [7, 11, 5, 8, 3, 7],
-        fill: false,
-        tension: 0.4,
-        borderWidth: 4,
-        borderDash: [12, 4, 4, 4],
-        borderColor: '#4dc900',
-        backgroundColor: '#ffffff',
-        pointHitRadius: 5,
-      },*/
+      {
+        label: 'ramp',
+        data: [
+          { x: 0, y: 15 },
+          { x: 10, y: 15 },
+        ],
+        borderWidth: 3,
+
+        borderColor: colorLib('#230c00').alpha(0.4).rgbString(),
+        pointHitRadius: 25,
+        borderCapStyle: 'square',
+        borderJoinStyle: 'bevel', // round, miter
+        pointStyle: 'cross',
+        radius: 6,
+      },
+      {
+        label: 'rampKORR',
+        data: [
+          { x: 0, y: 25 },
+          { x: 10, y: 25 },
+        ],
+        borderWidth: 3,
+
+        borderColor: colorLib('#235366').rgbString(),
+        pointHitRadius: 25,
+        borderCapStyle: 'square',
+        borderJoinStyle: 'bevel', // round, miter
+        pointStyle: 'star', // "circle" | "cross" | "crossRot" | "dash" | "line" | "rect" | "rectRounded" | "rectRot" | "star" | "triangle" | HTMLImageElement | HTMLCanvasElemen
+        radius: 6,
+        //stepped: 'before',
+      },
     ],
   },
   options: {
@@ -243,7 +215,7 @@ const config: ChartConfiguration = {
       y: {
         //offset: true,
         min: 0,
-        max: 20,
+        max: 30,
         bounds: 'data',
         //suggestedMin: 0,
         //suggestedMax: 20,
@@ -262,7 +234,7 @@ const config: ChartConfiguration = {
           text: 'Foo',
         },
         ticks: {
-          callback: function (val: number, index: number, ticks: Tick[]) {
+          callback: (val, index, ticks) => {
             // \u2771\u2771
             //  0x276e +f
             // Hide every 2nd tick label
@@ -317,15 +289,15 @@ const config: ChartConfiguration = {
     },*/
     onHover: function (e: ChartEvent) {
       const point = chart.getElementsAtEventForMode(
-        e.native,
+        e.native!,
         'nearest',
         { intersect: true },
         false
       );
       if (point.length) {
-        (e.native.target as HTMLElement).style.cursor = 'grab';
+        (e.native!.target as HTMLElement).style.cursor = 'grab';
       } else {
-        (e.native.target as HTMLElement).style.cursor = 'default';
+        (e.native!.target as HTMLElement).style.cursor = 'default';
       }
     },
     onClick: function (e: ChartEvent) {
@@ -333,7 +305,7 @@ const config: ChartConfiguration = {
         `chart ev ${e.type}@${e.x},${e.y}`,
 
         chart.getElementsAtEventForMode(
-          e.native,
+          e.native!,
           'dataset', // index, dataset, point, nearest, x,y
           { intersect: false },
           false
@@ -343,28 +315,6 @@ const config: ChartConfiguration = {
       return true;
     },
     plugins: {
-      zoom: {
-        pan: {
-          enabled: true,
-          mode: 'xy',
-          modifierKey: 'alt',
-          overScaleMode: undefined,
-          threshold: 10,
-        },
-        limits: {
-          x: { min: -1, max: 15 },
-          y: { min: -1, max: 25 },
-        },
-        zoom: {
-          wheel: {
-            enabled: true,
-          },
-          pinch: {
-            enabled: true,
-          },
-          mode: 'xy',
-        },
-      },
       legend: {
         position: 'bottom',
         labels: {
@@ -461,11 +411,11 @@ const config: ChartConfiguration = {
             return value >= 2 && value <= 19;
           }
           const ret = { ...value };
-          if (value.y < 2) {
+          if (value?.y ?? 0 < 2) {
             ret.y = 2;
           }
-          if (value.y > 19) {
-            ret.y = 19;
+          if (value?.y ?? 30 > 29) {
+            ret.y = 29;
           }
           // console.log('returning: ', ret);
           return ret;
@@ -481,9 +431,11 @@ const config: ChartConfiguration = {
   },
 };
 
-const chart = new Chart(ctx, config);
+const chart = new Chart(ctx!, config);
 
-tempRange.setAttribute('value', String(chart.data.datasets[0].borderWidth));
+console.warn('CHART', chart);
+
+tempRange?.setAttribute('value', String(chart.data.datasets[0].borderWidth));
 
 export function onTempValueChange(ev: any) {
   ev.preventDefault();
@@ -515,4 +467,24 @@ export function onChangeStep(ev: MouseEvent) {
   ds.stepped = newStep as any;
   stepB.textContent = `Step: ${newStep}`;
   chart.update();
+}
+
+export function onRampB(ev: MouseEvent) {
+  console.log(`ramp!`);
+  const pt = chart.data.datasets[4] as ChartDataset<'line'>;
+  const ds = chart.data.datasets[6] as ChartDataset<'line'>;
+  const ko = chart.data.datasets[7] as ChartDataset<'line'>;
+
+  if (ds != null && pt != null) {
+    const rmp = toRamp(pt.data as any);
+    ds.data = rmp.map((p) => ({ x: p.x, y: p.y + 10 }));
+    if (ko != null) {
+      ko.data = structuredClone(rmp)
+        .filter((p, i, a) => i % 2 === 1 || i === 0 || i === a.length - 1)
+        .map((p) => ({ x: p.x, y: p.y + 20 }));
+    }
+    chart.update();
+  } else {
+    console.log(`no ds`, ds?.label, pt?.label);
+  }
 }
