@@ -4,10 +4,10 @@ export interface Point {
 }
 
 export function toRamp(points: Point[]) {
-  return toEstherRampAlt(points);
+  return toRampCC4(points);
 }
 
-export function toEstherRamp(origPoints: Point[]) {
+export function toRampCC300(origPoints: Point[]) {
   const points = structuredClone(origPoints);
   for (let i = 1; i < points.length - 2; i = i + 2) {
     points[i + 1].x = points[i].x;
@@ -21,7 +21,7 @@ export function toEstherRamp(origPoints: Point[]) {
 /**
  * Converts a profile fomr a polyline to a manhattan path (staircase, "ramped" profile)
  */
-export function toEstherRampAlt(origPoints: Point[]) {
+export function toRampCC4(origPoints: Point[]) {
   const points = structuredClone(origPoints);
   for (let i = 1; i < points.length - 2; i = i + 2) {
     points[i + 1].x = points[i].x;

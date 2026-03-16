@@ -18,6 +18,7 @@ import { ChartJSdragDataPlugin } from './drag';
 
 // DRAG SEGMENT: API incompatible!
 // import ChartJSdragSegment  from 'chartjs-plugin-dragsegment'; // API incompatible (chart.js 2.x?)
+//
 
 const DATA_COUNT = 7;
 let col: Color;
