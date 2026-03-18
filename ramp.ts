@@ -4,7 +4,7 @@ export interface Point {
 }
 
 export function toRamp(points: Point[]) {
-  return toRampCC4(points);
+  return toRampCC300(points);
 }
 
 export function toRampCC300(origPoints: Point[]) {

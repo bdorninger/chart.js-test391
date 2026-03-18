@@ -133,7 +133,7 @@ const config: ChartConfiguration = {
           { x: 2, y: 5 },
           { x: 3.5, y: 4 },
           { x: 4, y: 3 },
-          { x: 5, y: 7 },
+          //{ x: 5, y: 7 },
           { x: 6, y: 9 },
           { x: 8, y: 9 },
           { x: 10, y: 6 },
